@@ -66,7 +66,7 @@ private:
      * @param curr the current node that will change when we go on depth or back track
      * @param query the query that we want to insert
      * @return currMax high in the current back track calls to check if it greater than the current node it will update it's max
-     * if not it will change to the current node max till the root 
+     * if not it will change to be the current node max till the root
      */
     int insert(Node *curr, Interval query)
     {
@@ -74,6 +74,7 @@ private:
         // the current interval is less than to the query interval that we want to InsertInterval so, go to the curr-> right
         if((query.low > curr->interval.low) || (query.low == curr->interval.low && query.high > curr->interval.high))
         {
+            // base case, if the right is null just insert in the current right
             if(curr->right == nullptr)
             {
                 Node* node = new Node();
@@ -83,11 +84,13 @@ private:
                 // set the currMax to the query high
                 currMax = query.high;
             }
-            else insertedMex = insert(curr->right, interval);
+            // go depth in the right if it is not null
+            else currMax = insert(curr->right, query); // the currMax will take the max high value from the depth till here
         }
         // the current interval is greater than to the query interval that we want to InsertInterval so, go to the curr-> left
         else if((query.low < curr->interval.low) || (query.low == curr->interval.low && query.high < curr->interval.high))
         {
+            // base case, if the left is null just insert in the current right
             if(curr->left == nullptr)
             {
                 Node* node = new Node();
@@ -97,18 +100,20 @@ private:
                 // set the currMax to the query high
                 currMax = query.high;
             }
-            else insertedMex = insert(curr->left, interval);
+            // if the left is not null go depth in the left
+            else currMax = insert(curr->left, query);   // the currMax will take the max high value from the depth till here
         }
         // if the current max greater than the current node max update the current node max
         if(currMax > curr->max)
         {
             curr->max = currMax;
         }
+        // if the current node has a max greater than the current max change the current max value for the back track to update parents
         else
         {
             currMax = curr->max;
         }
-        return insertedMex;
+        return currMax;
     }
 
 public:
