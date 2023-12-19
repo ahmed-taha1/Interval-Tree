@@ -133,6 +133,12 @@ public:
      */
     void InsertInterval(Interval query)
     {
+        // invalid interval
+        if(query.high <= query.low || query.high < 0 || query.low < 0)
+        {
+            return;
+        }
+
         // insert first query
         if(root == nullptr)
         {
