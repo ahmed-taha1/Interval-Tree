@@ -1,40 +1,56 @@
 #include <iostream>
 using namespace std;
 
+/**
+ * The interval struct that consists of a range starting at 'low' and ending at 'high'
+ */
 struct Interval{
-    int start;
-    int end;
+    int low;
+    int high;
     Interval()
     {
-        start = -1;
-        end = -1;
+        low = -1;
+        high = -1;
     }
     Interval(int start, int end)
     {
-        this->start = start;
-        this->end = end;
+        this->low = start;
+        this->high = end;
     }
 };
 
+/**
+ * Output operator overloading for Interval structure
+ * @param out The ostream
+ * @param interval The interval to be printed
+ * @return The ostream
+ */
 ostream& operator <<(ostream & out, Interval interval){
-    if (interval.start == INT_MAX && interval.end == INT_MAX)
+    if (interval.low == INT_MAX && interval.high == INT_MAX)
     {
         out << "Interval doesn't overlap with any intervals" << '\n';
     }
     else
     {
-        out << interval.start << " " << interval.end << '\n';
+        out << interval.low << " " << interval.high << '\n';
     }
     return out;
 }
 
+/**
+ * The tree node
+ */
 struct Node{
-    Interval interval;
-    int maxHighInSubtree;
     Node* left;
     Node* right;
-    Node(){
-        maxHighInSubtree = -1;
+    // the interval in node
+    Interval interval;
+    // the max high value in the tree rooted at this node
+    int max;
+
+    Node()
+    {
+        max = -1;
         left = nullptr;
         right = nullptr;
     }
@@ -42,81 +58,118 @@ struct Node{
 
 class IntervalTree{
 private:
+    // root of the interval tree
     Node* root;
-    int insert(Node *curr, Interval interval)
+
+    /**
+     * recursive method to insert query into the tree
+     * @param curr the current node that will change when we go on depth or back track
+     * @param query the query that we want to insert
+     * @return currMax high in the current back track calls to check if it greater than the current node it will update it's max
+     * if not it will change to the current node max till the root 
+     */
+    int insert(Node *curr, Interval query)
     {
-        int insertedMex = 0;
-        // the current interval is less than to the interval that we want to InsertInterval so, go to the curr-> right
-        if( (interval.start > curr->interval.start) || (interval.start == curr->interval.start && interval.end > curr->interval.end))
+        int currMax = 0;
+        // the current interval is less than to the query interval that we want to InsertInterval so, go to the curr-> right
+        if((query.low > curr->interval.low) || (query.low == curr->interval.low && query.high > curr->interval.high))
         {
             if(curr->right == nullptr)
             {
                 Node* node = new Node();
-                node->interval = interval;
-                node->maxHighInSubtree = interval.end;
+                node->interval = query;
+                node->max = query.high;
                 curr->right = node;
-                insertedMex = node->maxHighInSubtree;
+                // set the currMax to the query high
+                currMax = query.high;
             }
             else insertedMex = insert(curr->right, interval);
         }
-        // the current interval is greater than to the interval that we want to InsertInterval so, go to the curr-> left
-        else if( (interval.start < curr->interval.start) || (interval.start == curr->interval.start && interval.end < curr->interval.end))
+        // the current interval is greater than to the query interval that we want to InsertInterval so, go to the curr-> left
+        else if((query.low < curr->interval.low) || (query.low == curr->interval.low && query.high < curr->interval.high))
         {
             if(curr->left == nullptr)
             {
                 Node* node = new Node();
-                node->interval = interval;
-                node->maxHighInSubtree = interval.end;
+                node->interval = query;
+                node->max = query.high;
                 curr->left = node;
-                insertedMex = node->maxHighInSubtree;
+                // set the currMax to the query high
+                currMax = query.high;
             }
             else insertedMex = insert(curr->left, interval);
         }
-
-        if(insertedMex > curr->maxHighInSubtree)
+        // if the current max greater than the current node max update the current node max
+        if(currMax > curr->max)
         {
-            curr->maxHighInSubtree = insertedMex;
+            curr->max = currMax;
         }
         else
         {
-            insertedMex = curr->maxHighInSubtree;
+            currMax = curr->max;
         }
         return insertedMex;
     }
 
 public:
+    /**
+     * Tree constructor
+     */
     IntervalTree()
     {
         root = nullptr;
     }
 
-    void InsertInterval(Interval interval)
+    /**
+     * The insertion function to insert a given query
+     * @param query Interval to be inserted
+     */
+    void InsertInterval(Interval query)
     {
+        // insert first query
         if(root == nullptr)
         {
             root = new Node();
-            root->interval = interval;
-            root->maxHighInSubtree = interval.end;
+            root->interval = query;
+            root->max = query.high;
         }
-        else insert(root, interval);
+        // insert other intervals
+        else
+        {
+            insert(root, query);
+        }
     }
 
+    /**
+     * The search function to search and return the interval with the minimum low that overlaps with the query interval
+     * @param query The query interval
+     * @return The interval with a minimum low value that overlaps with the query interval
+     */
     Interval SearchInterval(Interval query)
     {
         Node* curr = root;
+
+        // the interval to be updated and returned
         Interval minInterval(INT_MAX, INT_MAX);
+
+        // apply iterative DFS along a path that matches the search overlapping conditions
         while (curr != nullptr)
         {
-            // store the current interval if it overlaps the query interval and it is less than the low in the current minInterval
-            if(query.start <= curr->interval.end && curr->interval.start <= query.end && minInterval.start > curr->interval.start){
+            // store the current interval if it overlaps the query interval and is less than the low in the current minInterval
+            if(query.low <= curr->interval.high && curr->interval.low <= query.high && curr->interval.low < minInterval.low)
+            {
                 minInterval = curr->interval;
             }
 
-            if(curr->left != nullptr && query.start <= curr->left->maxHighInSubtree)
+            // choose the subtree to search through
+            if(curr->left != nullptr && query.low <= curr->left->max)
             {
                 curr = curr->left;
             }
-            else curr = curr->right;
+            else
+            {
+                curr = curr->right;
+            }
         }
         return minInterval;
     }
@@ -125,7 +178,7 @@ public:
     {
         if(curr == nullptr)
             return;
-        cout << curr->interval.start << " " << curr->interval.end << '\n';
+        cout << curr->interval.low << " " << curr->interval.high << '\n';
         printDfs(curr->left);
         printDfs(curr->right);
     }
