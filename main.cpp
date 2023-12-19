@@ -103,6 +103,7 @@ private:
             // if the left is not null go depth in the left
             else currMax = insert(curr->left, query);   // the currMax will take the max high value from the depth till here
         }
+
         // if the current max greater than the current node max update the current node max
         if(currMax > curr->max)
         {
@@ -113,6 +114,7 @@ private:
         {
             currMax = curr->max;
         }
+
         return currMax;
     }
 
@@ -157,6 +159,12 @@ public:
         // the interval to be updated and returned
         Interval minInterval(INT_MAX, INT_MAX);
 
+        // invalid interval
+        if(query.high <= query.low || query.high < 0 || query.low < 0)
+        {
+            return minInterval;
+        }
+
         // apply iterative DFS along a path that matches the search overlapping conditions
         while (curr != nullptr)
         {
@@ -179,28 +187,67 @@ public:
         return minInterval;
     }
 
-    void printDfs(Node* curr)
-    {
-        if(curr == nullptr)
-            return;
-        cout << curr->interval.low << " " << curr->interval.high << '\n';
-        printDfs(curr->left);
-        printDfs(curr->right);
-    }
-    void dfs()
-    {
-        printDfs(root);
-    }
 };
 
 int main()
 {
-    IntervalTree intervalTree;
-    intervalTree.InsertInterval(Interval(1, 2));
-    intervalTree.InsertInterval(Interval(2, 3));
-    intervalTree.InsertInterval(Interval(0, 21));
-    intervalTree.InsertInterval(Interval(3, 21));
-    intervalTree.InsertInterval(Interval(40, 100));
-    intervalTree.dfs();
-    cout << intervalTree.SearchInterval(Interval(101, 200));
+    IntervalTree iT1;
+    iT1.InsertInterval(Interval(20, 25));
+    iT1.InsertInterval(Interval(10, 30));
+    iT1.InsertInterval(Interval(30, 50));
+    iT1.InsertInterval(Interval(5, 10));
+    iT1.InsertInterval(Interval(15, 50));
+    iT1.InsertInterval(Interval(25, 40));
+    iT1.InsertInterval(Interval(35, 40));
+    iT1.InsertInterval(Interval(5, 25));
+    iT1.InsertInterval(Interval(55, 70));
+
+    cout << "Q01: " << iT1.SearchInterval(Interval(1, 5)); // 5 10
+    cout << "Q02: " << iT1.SearchInterval(Interval(0, 4)); // NF
+    cout << "Q03: " << iT1.SearchInterval(Interval(15, 100)); // 5 25
+    cout << "Q04: " << iT1.SearchInterval(Interval(10, 40)); // 5 10
+    cout << "Q05: " << iT1.SearchInterval(Interval(80, 100)); // NF
+    cout << "Q06: " << iT1.SearchInterval(Interval(40, 60)); // 15 50
+    cout << "Q07: " << iT1.SearchInterval(Interval(60, 80)); // 55 70
+    cout << "Q08: " << iT1.SearchInterval(Interval(36, 40)); // 15 50
+    cout << "Q09: " << iT1.SearchInterval(Interval(75, 80)); // NF
+    cout << "Q10: " << iT1.SearchInterval(Interval(10, 20)); // 5 10
+    cout << "Q11: " << iT1.SearchInterval(Interval(2, 3)); // NF
+    cout << "Q12: " << iT1.SearchInterval(Interval(3, 5)); // 5 10
+    cout << "Q13: " << iT1.SearchInterval(Interval(60, 85)); // 55 70
+    cout << "Q14: " << iT1.SearchInterval(Interval(100, 150)); // NF
+    cout << "Q15: " << iT1.SearchInterval(Interval(21, 25)); // 5 25
+
+    cout << "------------------------------" << '\n';
+
+    IntervalTree iT2;
+    iT2.InsertInterval(Interval(300, 320));
+    iT2.InsertInterval(Interval(310, 360));
+    iT2.InsertInterval(Interval(390, 420));
+    iT2.InsertInterval(Interval(350, 450));
+    iT2.InsertInterval(Interval(180, 250));
+    iT2.InsertInterval(Interval(130, 200));
+    iT2.InsertInterval(Interval(250, 350));
+    iT2.InsertInterval(Interval(100, 150));
+    iT2.InsertInterval(Interval(170, 300));
+    iT2.InsertInterval(Interval(200, 250));
+    iT2.InsertInterval(Interval(270, 300));
+
+    cout << "Q16: " << iT2.SearchInterval(Interval(100, 101));  // 100 150
+    cout << "Q17: " << iT2.SearchInterval(Interval(12, 400));   // 100 150
+    cout << "Q18: " << iT2.SearchInterval(Interval(12, 15));    // NF
+    cout << "Q19: " << iT2.SearchInterval(Interval(190, 201));  // 130 200
+    cout << "Q20: " << iT2.SearchInterval(Interval(362, 400));  // 350 450
+    cout << "Q21: " << iT2.SearchInterval(Interval(161, 270));  // 130 200
+    cout << "Q22: " << iT2.SearchInterval(Interval(414, 600));  // NF
+    cout << "Q23: " << iT2.SearchInterval(Interval(-1, -1));    // NF
+    cout << "Q24: " << iT2.SearchInterval(Interval(330, 335));  // 250 350
+    cout << "Q25: " << iT2.SearchInterval(Interval(300, 301));  // 170 300
+    cout << "Q26: " << iT2.SearchInterval(Interval(107, 110));  // 100 150
+    cout << "Q27: " << iT2.SearchInterval(Interval(210, 230));  // 170 300
+    cout << "Q28: " << iT2.SearchInterval(Interval(50, 100));   // 100 150
+    cout << "Q29: " << iT2.SearchInterval(Interval(50, 99));    // NF
+    cout << "Q30: " << iT2.SearchInterval(Interval(401, 450));  // 350 450
+    cout << "Q31: " << iT2.SearchInterval(Interval(400, 200));  // NF
+    cout << "Q32: " << iT2.SearchInterval(Interval(1000, 1001));  // NF
 }
