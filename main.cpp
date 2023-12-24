@@ -115,7 +115,8 @@ private:
      * this method removes all nodes from the tree from the leaves to the current node which is passed at the method call
      * @param curr the current node
      */
-    void removeNodesFromLeafs(Node*& curr){
+    void removeNodesFromLeafs(Node*& curr)
+    {
         if(curr == nullptr) return;
         removeNodesFromLeafs(curr->right);
         removeNodesFromLeafs(curr->left);
