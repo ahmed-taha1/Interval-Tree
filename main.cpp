@@ -62,16 +62,13 @@ private:
     Node* root;
 
     /**
-     * recursive method to insert query into the tree
+     * recursive method to insert query into the tree and updating max value to the inserted
      * @param curr the current node that will change when we go on depth or back track
      * @param query the query that we want to insert
-     * @return currMax high in the current back track calls to check if it greater than the current node it will update it's max
-     * if not it will change to be the current node max till the root
      */
-    int insert(Node *curr, Interval query)
+    void insert(Node *curr, Interval query)
     {
-        int currMax = 0;
-        // the current interval is less than to the query interval that we want to InsertInterval so, go to the curr-> right
+        // the current interval is less than to the query interval that we want to InsertInterval so, go to the curr-> right or equal them compare by high value
         if((query.low > curr->interval.low) || (query.low == curr->interval.low && query.high > curr->interval.high))
         {
             // base case, if the right is null just insert in the current right
@@ -81,13 +78,11 @@ private:
                 node->interval = query;
                 node->max = query.high;
                 curr->right = node;
-                // set the currMax to the query high
-                currMax = query.high;
             }
             // go depth in the right if it is not null
-            else currMax = insert(curr->right, query); // the currMax will take the max high value from the depth till here
+            else insert(curr->right, query);
         }
-        // the current interval is greater than to the query interval that we want to InsertInterval so, go to the curr-> left
+        // the current interval is greater than to the query interval that we want to InsertInterval so, go to the curr-> left or equal them compare by high value
         else if((query.low < curr->interval.low) || (query.low == curr->interval.low && query.high < curr->interval.high))
         {
             // base case, if the left is null just insert in the current right
@@ -97,25 +92,35 @@ private:
                 node->interval = query;
                 node->max = query.high;
                 curr->left = node;
-                // set the currMax to the query high
-                currMax = query.high;
             }
             // if the left is not null go depth in the left
-            else currMax = insert(curr->left, query);   // the currMax will take the max high value from the depth till here
+            else insert(curr->left, query);
         }
 
-        // if the current max greater than the current node max update the current node max
-        if(currMax > curr->max)
-        {
-            curr->max = currMax;
-        }
-        // if the current node has a max greater than the current max change the current max value for the back track to update parents
-        else
-        {
-            currMax = curr->max;
-        }
+        // back track max updating
 
-        return currMax;
+        // if the current node has right child let its max equal to maximum number between its max and its right child max
+        if(curr->right != nullptr)
+        {
+            curr->max = max(curr->max, curr->right->max);
+        }
+        // if the current node has left child let its max equal to maximum number between its max and its left child max
+        if(curr->left != nullptr)
+        {
+            curr->max = max(curr->max, curr->left->max);
+        }
+    }
+
+    /**
+     * this method removes all nodes from the tree from the leaves to the current node which is passed at the method call
+     * @param curr the current node
+     */
+    void removeNodesFromLeafs(Node*& curr){
+        if(curr == nullptr) return;
+        removeNodesFromLeafs(curr->right);
+        removeNodesFromLeafs(curr->left);
+        delete curr;
+        curr = nullptr;
     }
 
 public:
@@ -127,6 +132,13 @@ public:
         root = nullptr;
     }
 
+    /**
+     * tree destructor to remove the nodes from the tree
+     */
+    ~IntervalTree()
+    {
+        removeNodesFromLeafs(root);
+    }
     /**
      * The insertion function to insert a given query
      * @param query Interval to be inserted
@@ -245,7 +257,7 @@ int main()
     cout << "Q19: " << iT2.SearchInterval(Interval(190, 201));  // 130 200
     cout << "Q20: " << iT2.SearchInterval(Interval(362, 400));  // 350 450
     cout << "Q21: " << iT2.SearchInterval(Interval(161, 270));  // 130 200
-    cout << "Q22: " << iT2.SearchInterval(Interval(414, 600));  // NF
+    cout << "Q22: " << iT2.SearchInterval(Interval(414, 600));  // 350 450
     cout << "Q23: " << iT2.SearchInterval(Interval(-1, -1));    // NF
     cout << "Q24: " << iT2.SearchInterval(Interval(330, 335));  // 250 350
     cout << "Q25: " << iT2.SearchInterval(Interval(300, 301));  // 170 300
